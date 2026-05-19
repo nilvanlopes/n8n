@@ -56,6 +56,7 @@ services:
         aliases:
           - n8n
       traefik-public:
+      traefik-local:
     deploy:
       replicas: 1
       placement:
@@ -87,6 +88,7 @@ services:
       - n8n_data:/home/node/.n8n
     networks:
       - n8n
+      - traefik-local
     deploy:
       replicas: 2
       restart_policy:
@@ -98,6 +100,8 @@ networks:
   n8n:
     external: true
   traefik-public:
+    external: true
+  traefik-local:
     external: true
 
 volumes:

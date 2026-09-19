@@ -38,6 +38,10 @@ Stack do [n8n](https://n8n.io/) para este ambiente Docker Swarm, com PostgreSQL,
 - `N8N_ENCRYPTION_KEY` precisa ser estável. Se mudar depois, credenciais já salvas podem parar de funcionar.
 - `WEBHOOK_URL` deve usar a URL pública final do serviço.
 - O `n8n-main` é exposto via Traefik na porta interna `5678`.
+- O editor e as rotas privadas passam por CrowdSec e Authentik.
+- Webhooks e MCP continuam acessíveis para clientes automatizados, mas as
+  exceções são controladas pelo Proxy Provider do Authentik e ainda devem usar
+  a autenticação própria do n8n.
 - O MCP nativo do n8n usa o mesmo host público. Para o MCP instance-level, use `https://<N8N_HOST>/mcp-server/http`.
 - Workflows não ficam expostos ao MCP automaticamente: habilite `Settings > Instance-level MCP` e depois marque cada workflow como `Available in MCP`.
 - O MCP Server Trigger por workflow usa rotas `/mcp*`. Esta stack tem uma única réplica `n8n-main`, então as conexões SSE/HTTP streamable ficam concentradas em uma instância.
@@ -77,3 +81,31 @@ O n8n entra na rede `traefik-local`, então pode chamar o serviço pelo alias in
 ## Acesso
 
 Depois do deploy, a interface ficará disponível em `https://<N8N_HOST>`.
+
+## Proteção
+
+O acesso do editor é limitado no Authentik ao grupo `n8n`. O provisionamento
+desse Application, Provider, Outpost e binding é executado pela raiz do
+repositório:
+
+```bash
+read -rsp "Authentik API token: " AUTHENTIK_API_TOKEN; echo
+export AUTHENTIK_API_TOKEN
+make provision-authentik-n8n
+unset AUTHENTIK_API_TOKEN
+```
+
+O token administrativo não deve ser commitado nem exibido em logs. Depois de
+provisionar os objetos, copie o token gerado pelo Authentik para
+`authentik/outposts/n8n/.env` e execute:
+
+```bash
+make deploy-authentik-outpost-n8n
+make deploy-traefik
+make deploy-n8n
+```
+
+Os caminhos `/webhook`, `/webhook-test`, `/webhook-waiting`, `/mcp` e
+`/mcp-server` são exceções de sessão no Authentik para permitir integrações
+automáticas. Cada webhook deve continuar usando Header, JWT ou Basic Auth do
+n8n quando não for deliberadamente público.

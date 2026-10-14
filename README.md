@@ -39,9 +39,9 @@ Stack do [n8n](https://n8n.io/) para este ambiente Docker Swarm, com PostgreSQL,
 - `WEBHOOK_URL` deve usar a URL pública final do serviço.
 - O `n8n-main` é exposto via Traefik na porta interna `5678`.
 - O editor e as rotas privadas passam por CrowdSec e Authentik.
-- Webhooks e MCP continuam acessíveis para clientes automatizados, mas as
-  exceções são controladas pelo Proxy Provider do Authentik e ainda devem usar
-  a autenticação própria do n8n.
+- Webhooks e MCP usam um router de prioridade maior, sem sessão de navegador do
+  Authentik, mas continuam protegidos por CrowdSec e pela autenticação própria
+  do n8n.
 - O MCP nativo do n8n usa o mesmo host público. Para o MCP instance-level, use `https://<N8N_HOST>/mcp-server/http`.
 - Workflows não ficam expostos ao MCP automaticamente: habilite `Settings > Instance-level MCP` e depois marque cada workflow como `Available in MCP`.
 - O MCP Server Trigger por workflow usa rotas `/mcp*`. Esta stack tem uma única réplica `n8n-main`, então as conexões SSE/HTTP streamable ficam concentradas em uma instância.
@@ -106,6 +106,7 @@ make deploy-n8n
 ```
 
 Os caminhos `/webhook`, `/webhook-test`, `/webhook-waiting`, `/mcp` e
-`/mcp-server` são exceções de sessão no Authentik para permitir integrações
-automáticas. Cada webhook deve continuar usando Header, JWT ou Basic Auth do
+`/mcp-server` são roteados sem sessão de navegador para permitir integrações
+automáticas. O Proxy Provider também mantém essas exceções como defesa em
+profundidade. Cada webhook deve continuar usando Header, JWT ou Basic Auth do
 n8n quando não for deliberadamente público.

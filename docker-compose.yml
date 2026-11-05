@@ -90,6 +90,15 @@ services:
 
   n8n-worker:
     image: n8nio/n8n:latest@sha256:b4b90747b81fcda7e76550c0d3aa7f0f64917a1e9573cff40d6834eaf2e0f8ea
+    environment:
+      QUEUE_HEALTH_CHECK_ACTIVE: "true"
+      QUEUE_HEALTH_CHECK_PORT: "5678"
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http');const req=http.get('http://[::1]:5678/healthz/readiness',r=>{r.resume();process.exit(r.statusCode>=200&&r.statusCode<400?0:1)});req.setTimeout(4000,()=>{req.destroy();process.exit(1)});req.on('error',()=>process.exit(1));"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     command: worker
     env_file: .env
     volumes:

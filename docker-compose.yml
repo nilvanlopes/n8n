@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15-alpine@sha256:fe0737ba566a2c5b2a28f34433c0a423261900ec17b9bf7ad115e1aae7e57f1b
+    image: postgres:15-alpine@sha256:23799e521dee9265a8b388ecf3bc0f1eaa34b95be67f5a76af4f8f6adb44c720
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -25,7 +25,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
+    image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
@@ -47,7 +47,7 @@ services:
       retries: 5
 
   n8n-main:
-    image: n8nio/n8n:latest@sha256:14c4285bc3034dc5b51034aea393711d27053588e460722bce523453a626f23c
+    image: n8nio/n8n:latest@sha256:b4b90747b81fcda7e76550c0d3aa7f0f64917a1e9573cff40d6834eaf2e0f8ea
     env_file: .env
     volumes:
       - n8n_data:/home/node/.n8n
@@ -89,7 +89,7 @@ services:
       start_period: 60s
 
   n8n-worker:
-    image: n8nio/n8n:latest@sha256:14c4285bc3034dc5b51034aea393711d27053588e460722bce523453a626f23c
+    image: n8nio/n8n:latest@sha256:b4b90747b81fcda7e76550c0d3aa7f0f64917a1e9573cff40d6834eaf2e0f8ea
     command: worker
     env_file: .env
     volumes:
